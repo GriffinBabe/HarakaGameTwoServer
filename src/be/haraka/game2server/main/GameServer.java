@@ -67,8 +67,10 @@ public class GameServer extends Thread
 		Packet.PacketTypes type = Packet.lookupPacket(message.substring(0, 2));
 		switch (type) {
 			default:
+				
 			case INVALID:
 				break;
+				
 			case LOGIN:
 				//On crée un packet de Login à partir du packet data
 				packet = new Packet00Login(data);
@@ -76,6 +78,7 @@ public class GameServer extends Thread
 				//Vérifie si la liste à déjà un élément
 				if (inGamePlayers.size() == 0){
 					inGamePlayers.add(new Player(address, ((Packet00Login)packet).getUsername()));
+					System.out.println("First player connected since server start");
 					System.out.println("["+address.getHostAddress()+":"+port+"] "+((Packet00Login)packet).getUsername()+" has connected!");
 				}
 				else{
@@ -90,16 +93,19 @@ public class GameServer extends Thread
 						//Si il n'existe pas dans les joueurs qui ont déjà étés connectés, il l'ajoute
 						inGamePlayers.add(new Player(address, ((Packet00Login)packet).getUsername()));
 						System.out.println("[" + address.getHostAddress() + ":" + port + "] " + ((Packet00Login)packet).getUsername() + " has connected!");
-						}
+					}
 				}
 				break;
 
 			case DISCONNECT:
 				packet  = new Packet01Disconnect(data);
+				System.out.println("Received disconnect packet from username: "+((Packet01Disconnect)packet).getUsername());
 
 				//Cherche le player avec l'username correspodant et le met en offline
 				for (Player p : inGamePlayers) {
-					if (p.username == ((Packet01Disconnect)packet).getUsername()) {
+					System.out.println(p.username);
+					if ((String) p.username == (String) ((Packet01Disconnect) packet).getUsername()) {
+						System.out.println("[" + address.getHostAddress() + ":" + port + "] " + ((Packet00Login)packet).getUsername() + " disconnected!");
 						p.isOnline = false;
 						break;
 					}
