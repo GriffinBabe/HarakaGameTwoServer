@@ -11,7 +11,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class GameServer extends Thread
@@ -21,7 +20,7 @@ public class GameServer extends Thread
 
 	public GameServer()
 	{
-		//Init the object, creating a socket, init the inGamePlayers
+		//Initializing the object, creating a socket, initializing the inGamePlayers
 		
 			try 
 			{
@@ -59,7 +58,7 @@ public class GameServer extends Thread
 		}
 	}
 
-	//On vérifie ce qu'est le packet et en fonction on intéragit
+	//We check the packet Type and act about it
 	private void parsePacket(byte[] data, InetAddress address, int port) {
 		String message = new String(data).trim();
 		Packet packet = null;
@@ -72,49 +71,24 @@ public class GameServer extends Thread
 				break;
 				
 			case LOGIN:
-				//On crée un packet de Login à partir du packet data
+				//We give login packet attributes to the packet
 				packet = new Packet00Login(data);
-
-				//Vérifie si la liste à déjà un élément
-				if (inGamePlayers.size() == 0){
-					inGamePlayers.add(new Player(address, ((Packet00Login)packet).getUsername()));
-					System.out.println("First player connected since server start");
-					System.out.println("["+address.getHostAddress()+":"+port+"] "+((Packet00Login)packet).getUsername()+" has connected!");
-				}
-				else{
-					//Vérifie si l'username donné n'existe pas déjà dans les joueurs qui ont déjà été connectés
-					for (Player p : inGamePlayers) {
-						//Si il  existe dans les joueur qui ont déjà étés connectés, alors il le considère de nouveau en ligne
-						if (((Packet00Login)packet).getUsername() == p.username) {
-							p.isOnline = true;
-							System.out.println("[" + address.getHostAddress() + ":" + port + "] " + ((Packet00Login)packet).getUsername() + " reconnected!");
-							break;
-						}
-						//Si il n'existe pas dans les joueurs qui ont déjà étés connectés, il l'ajoute
-						inGamePlayers.add(new Player(address, ((Packet00Login)packet).getUsername()));
-						System.out.println("[" + address.getHostAddress() + ":" + port + "] " + ((Packet00Login)packet).getUsername() + " has connected!");
-					}
-				}
+				//We use the playerLogin function
+				playerLogin(inGamePlayers,((Packet00Login) packet).getUsername(),address);
 				break;
 
 			case DISCONNECT:
+				//We give disconnect packet attributes to the packet
 				packet  = new Packet01Disconnect(data);
 				System.out.println("Received disconnect packet from username: "+((Packet01Disconnect)packet).getUsername());
 
-				//Cherche le player avec l'username correspodant et le met en offline
-				for (Player p : inGamePlayers) {
-					System.out.println(p.username);
-					if ((String) p.username == (String) ((Packet01Disconnect) packet).getUsername()) {
-						System.out.println("[" + address.getHostAddress() + ":" + port + "] " + ((Packet00Login)packet).getUsername() + " disconnected!");
-						p.isOnline = false;
-						break;
-					}
-				}
+				//We use the playerDisconnect function
+				playerDisconnect(inGamePlayers,((Packet00Login)packet).getUsername());
 				break;
 		}
 	}
 
-	//On  envoye  les données à un client d'une adresse en particulier
+	//We send a packet to a target client
 	public void sendData(byte[] data,InetAddress ipAddress, int port)
 	{
 		DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, 1331);
@@ -129,12 +103,37 @@ public class GameServer extends Thread
 		}
 		
 	}
-
-
-	//On envoye les données à tout les clients
+	
+	//We send a packet to all clients
 	public void sendDataToAllClients(byte[] data){
 		for (Player p: inGamePlayers) {
 			sendData(data, p.ipAdress, p.port);
 		}
+	}
+
+	
+	//We manage a login packet
+	private void playerLogin(ArrayList<Player> inGamePlayers, String username, InetAddress ipAdress) {
+		for (Player p : inGamePlayers) {
+			if (username.equals(p.username)) {
+				System.out.println(p.username+" reconnected!");
+				p.isOnline = true;
+				return;
+				}
+			}
+			inGamePlayers.add(new Player(ipAdress,username));
+			System.out.println(username+" connected!");
+		}
+	
+	//We manage a disconnect packet
+	private void playerDisconnect(ArrayList<Player> inGamePlayers, String username) {
+		for (Player p : inGamePlayers) {
+			if (username.equals(p.username)) {
+				System.out.println(p.username+" disconnected!");
+				p.isOnline = false;
+				return;
+			}
+		}
+		
 	}
 }

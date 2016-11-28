@@ -27,7 +27,7 @@ public abstract class Packet {
 
     public abstract void writeData(GameServer server);
 
-    //Fonction qui lit les deux premiers digits du packet
+    //Function that reads the packet's first two digits
     public String readData(byte[] data) {
         String message = new String(data).trim();
         return message.substring(2);
@@ -43,7 +43,7 @@ public abstract class Packet {
         }
     }
 
-    //Fonction qui vérifie si le paquet est valide, dans le cas écheant elle renvoye le packet invalide
+    //Function that checks if the packet is valid, else it returns the invalid packet
     public static PacketTypes lookupPacket(int id) {
         for (PacketTypes p : PacketTypes.values()) {
             if (p.getId() == id) {
