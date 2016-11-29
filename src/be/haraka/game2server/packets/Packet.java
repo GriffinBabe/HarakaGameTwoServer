@@ -7,7 +7,7 @@ public abstract class Packet {
 
     public static enum PacketTypes {
 
-        INVALID(-01), LOGIN(00), DISCONNECT(01);
+        INVALID(-01), LOGIN(00), DISCONNECT(01), GETPLAYERSTATES(02);
         private int packetId;
 
         private PacketTypes (int packetId) {
