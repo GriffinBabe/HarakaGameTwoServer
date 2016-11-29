@@ -83,7 +83,7 @@ public class GameServer extends Thread
 				System.out.println("Received disconnect packet from username: "+((Packet01Disconnect)packet).getUsername());
 
 				//We use the playerDisconnect function
-				playerDisconnect(inGamePlayers,((Packet00Login)packet).getUsername());
+				playerDisconnect(inGamePlayers,((Packet01Disconnect)packet).getUsername());
 				break;
 		}
 	}
